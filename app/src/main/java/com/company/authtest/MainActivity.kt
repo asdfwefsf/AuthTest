@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -26,6 +27,7 @@ import com.company.authtest.ui.theme.AuthTestTheme
 
 class MainActivity : ComponentActivity() {
     private val kaKaoAuthViewModel : KaKaoAuthViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -44,6 +46,9 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun KakoLoginView(viewModel: KaKaoAuthViewModel) {
+
+    val isLoggedIn = viewModel.isLoggedIn.collectAsState()
+    val userInfo = viewModel.userInfoList.collectAsState()
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(20.dp)
@@ -51,7 +56,7 @@ fun KakoLoginView(viewModel: KaKaoAuthViewModel) {
         Spacer(Modifier.height(10.dp))
 
         Button(onClick = {
-            viewModel.handleKakaoLogin()
+            viewModel.kakaoLogin()
         }) {
             Text("카카오 로그인")
         }
@@ -61,6 +66,18 @@ fun KakoLoginView(viewModel: KaKaoAuthViewModel) {
         }
 
         Text(text = "카카오 로그인 여부", textAlign = TextAlign.Center, fontSize = 20.sp)
+
+        if (userInfo.value.isNotEmpty()) {
+            Spacer(Modifier.height(10.dp))
+            Text(userInfo.value[0])
+            Spacer(Modifier.height(10.dp))
+            Text(userInfo.value[1])
+            Spacer(Modifier.height(10.dp))
+            Text(userInfo.value[2])
+            Spacer(Modifier.height(10.dp))
+            Text(userInfo.value[3])
+        }
+
     }
 }
 
