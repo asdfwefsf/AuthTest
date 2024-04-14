@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.widget.Space
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -20,9 +21,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
 import com.company.authtest.ui.theme.AuthTestTheme
 
 class MainActivity : ComponentActivity() {
+    private val kaKaoAuthViewModel : KaKaoAuthViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -32,7 +35,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    KakoLoginView()
+                    KakoLoginView(kaKaoAuthViewModel)
                 }
             }
         }
@@ -40,14 +43,16 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun KakoLoginView() {
+fun KakoLoginView(viewModel: KaKaoAuthViewModel) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         Spacer(Modifier.height(10.dp))
 
-        Button(onClick = { /*TODO*/ }) {
+        Button(onClick = {
+            viewModel.handleKakaoLogin()
+        }) {
             Text("카카오 로그인")
         }
 
@@ -58,3 +63,4 @@ fun KakoLoginView() {
         Text(text = "카카오 로그인 여부", textAlign = TextAlign.Center, fontSize = 20.sp)
     }
 }
+
