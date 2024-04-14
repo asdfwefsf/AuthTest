@@ -1,5 +1,10 @@
 #카카오 로그인 구현하는 방법
 
+주의!! Hash 값 얻을 때 application에 아래 코드 작성해서 Hash 값 얻기
+var keyHash = Utility.getKeyHash(this)
+Log.i("GlobalApplication", "$keyHash")
+
+
 1. 의존성 설정하기
 [settings.gradle.kts]
 dependencyResolutionManagement {
