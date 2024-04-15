@@ -13,6 +13,7 @@ import com.company.authtest.ui.theme.AuthTestTheme
 import com.company.authtest.viewmodel.KaKaoAuthViewModel
 import com.company.authtest.viewmodel.networkViewModel
 import com.company.screens.KakoLoginView
+import com.company.screens.MainScreen
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -28,8 +29,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    KakoLoginView(kaKaoAuthViewModel)
-
+//                    KakoLoginView(kaKaoAuthViewModel)
+                    MainScreen()
 
                 }
             }
