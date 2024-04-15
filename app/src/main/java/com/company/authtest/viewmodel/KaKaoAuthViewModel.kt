@@ -1,4 +1,4 @@
-package com.company.authtest
+package com.company.authtest.viewmodel
 
 import android.app.Application
 import android.util.Log
@@ -9,7 +9,6 @@ import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.launch
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -29,6 +28,7 @@ class KaKaoAuthViewModel(application : Application) : AndroidViewModel(applicati
             isLoggedIn.emit(handleKakaoLogin())
 
             suspendGetAuthInfo(userInfoList)
+
         }
     }
     private suspend fun handleKakaoLogin() : Boolean = 
