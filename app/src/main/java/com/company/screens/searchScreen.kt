@@ -28,13 +28,14 @@ import com.company.authtest.viewmodel.productviewmodel
 
 
 @Composable
-fun MainScreen() {
+fun ProductScreen(innerPadding : PaddingValues) {
 //    val networkViewModel : networkViewModel by viewModel()
 //    val thingOnViewModel: ThingOnViewModel = hiltViewModel()
     val networkViewModel: networkViewModel = viewModel()
     val categories = networkViewModel.thingOn.collectAsState()
 
     LazyColumn(
+        modifier = Modifier.padding(innerPadding),
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.SpaceAround,
     ) {

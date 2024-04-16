@@ -8,13 +8,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.lifecycleScope
 import com.company.authtest.ui.theme.AuthTestTheme
 import com.company.authtest.viewmodel.KaKaoAuthViewModel
 import com.company.authtest.viewmodel.networkViewModel
-import com.company.screens.KakoLoginView
-import com.company.screens.MainScreen
-import kotlinx.coroutines.launch
+import com.company.screens.BottomNav
+import com.company.screens.LoginScreen
+
 
 class MainActivity : ComponentActivity() {
     private val kaKaoAuthViewModel : KaKaoAuthViewModel by viewModels()
@@ -30,8 +29,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
 //                    KakoLoginView(kaKaoAuthViewModel)
-                    MainScreen()
-
+                    BottomNav()
                 }
             }
         }

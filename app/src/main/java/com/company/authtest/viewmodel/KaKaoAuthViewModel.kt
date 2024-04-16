@@ -1,14 +1,23 @@
 package com.company.authtest.viewmodel
 
 import android.app.Application
+import android.content.Context
 import android.util.Log
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -17,22 +26,54 @@ class KaKaoAuthViewModel(application : Application) : AndroidViewModel(applicati
 
     private val context = application.applicationContext
 
+    // DataStore 인스턴스 생성 : LOGIN이라는 이름을 가진 DataStore 인스턴스를 생성한거야.
+    private val Context.dataStore by preferencesDataStore("LOGIN")
+
+
     companion object {
         const val TAG = "KaKaoAuthViewModel"
+
+        val LOGGED_IN_KEY = booleanPreferencesKey("LOGGED_IN")
+    }
+    val isLoggedIn = MutableStateFlow<Boolean>(false)
+
+    // dataStore에서 LOGGED_IN_KEY 키에 isLoggedIn이라는 값을 넣어준다.
+    suspend fun saveLoginState(isLoggedIn: Boolean) {
+        context.dataStore.edit { LOGIN ->
+            LOGIN[LOGGED_IN_KEY] = isLoggedIn
+        }
     }
 
-    val isLoggedIn = MutableStateFlow<Boolean>(false)
+    // dataStore에서 LOGGED_IN_KEY를 키값으로 갖는 값을 "읽어서" Flow 방출
+    val loggedInState: Flow<Boolean> = context.dataStore.data.map { LOGIN ->
+        LOGIN[LOGGED_IN_KEY] ?: false
+    }
+    init {
+        // 데이터스토어에서 로그인 상태를 구독하고, 값이 방출될 때마다 StateFlow 업데이트
+        loggedInState.onEach { isLoggedInValue ->
+            isLoggedIn.value = isLoggedInValue
+        }.launchIn(viewModelScope)  // 이 부분은 코루틴 스코프 내에서 실행되어야 함
+    }
 
     fun kakaoLogin() {
         viewModelScope.launch {
-            isLoggedIn.emit(handleKakaoLogin())
+            // 로그인 시도 및 결과를 handleKakaoLogin 함수에서 받아옵니다.
+            val loginResult = handleKakaoLogin()
 
-            suspendGetAuthInfo(userInfoList)
+            // 로그인이 성공했다면,
+            if (loginResult) {
+                // 로그인 상태를 저장합니다.
+                saveLoginState(true)
 
+                // 사용자 정보를 불러오는 함수를 호출합니다.
+                suspendGetAuthInfo(userInfoList)
+            }
+
+            // 로그인 결과에 따라 로그인 상태를 업데이트합니다.
+            isLoggedIn.emit(loginResult)
         }
     }
-    private suspend fun handleKakaoLogin() : Boolean = 
-        
+    private suspend fun handleKakaoLogin() : Boolean =
         suspendCoroutine<Boolean> { continuation ->
             // 카카오계정으로 로그인 공통 callback 구성
             // 카카오톡으로 로그인 할 수 없어 카카오계정으로 로그인할 경우 사용됨
@@ -42,6 +83,9 @@ class KaKaoAuthViewModel(application : Application) : AndroidViewModel(applicati
                     continuation.resume(false)
                 } else if (token != null) {
                     Log.i(TAG, "카카오계정으로 로그인 성공 ${token.accessToken}")
+                    viewModelScope.launch {
+                        saveLoginState(true)
+                    }
                     continuation.resume(true)
                 }
             }
@@ -69,13 +113,11 @@ class KaKaoAuthViewModel(application : Application) : AndroidViewModel(applicati
             }
         }
 
+
+    // 사용자 정보 반환 관련 ViewModel
     private val _userInfoList = MutableStateFlow<List<String>>(emptyList())
     val userInfoList = _userInfoList
-    fun getAuthInfo() {
-        viewModelScope.launch {
-            suspendGetAuthInfo(_userInfoList)
-        }
-    }
+
     private suspend fun suspendGetAuthInfo(list : MutableStateFlow<List<String>>)  {
         UserApiClient.instance.me { user, error ->
             if (error != null) {
@@ -95,6 +137,11 @@ class KaKaoAuthViewModel(application : Application) : AndroidViewModel(applicati
             }
         }
     }
+//    fun getAuthInfo() {
+//        viewModelScope.launch {
+//            suspendGetAuthInfo(_userInfoList)
+//        }
+//    }
 
 
 }

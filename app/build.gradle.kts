@@ -82,6 +82,9 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
 
+    implementation ("androidx.datastore:datastore-preferences:1.0.0")
+
+
 
     implementation ("com.kakao.sdk:v2-all:2.20.1") // 전체 모듈 설치, 2.11.0 버전부터 지원
     implementation ("com.kakao.sdk:v2-user:2.20.1") // 카카오 로그인 API 모듈
