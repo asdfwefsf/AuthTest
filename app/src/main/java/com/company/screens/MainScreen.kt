@@ -49,6 +49,7 @@ sealed class Screen (val route : String) {
     object MainScreen : Screen("홈")
     object LoginScreen : Screen("로그인")
     object ProductScreen : Screen("상품")
+    object TestScreen : Screen("테스트")
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -78,7 +79,7 @@ fun BottomNav() {
         ),
 
         BottomNavItem(
-            title = "예비1",
+            title = "테스트",
             selectedIcon = R.drawable.ic_launcher_background,
             unselectedIcon = R.drawable.ic_launcher_background,
         ),
@@ -131,14 +132,18 @@ fun BottomNav() {
         innerPadding ->
         NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
             composable(route = Screen.MainScreen.route) {
-                val viewModel: KaKaoAuthViewModel = viewModel()
+                val viewModel : KaKaoAuthViewModel = viewModel()
+//                val viewModel = hiltViewModel<RoutineViewModel>()
 
                 LoginScreen(viewModel , navController)
             }
 
-//            composable(route = Screen.AlarmScreen.route) {
-//                AlarmScreen(navController)
-//            }
+            composable(route = Screen.TestScreen.route) {
+                val viewModel: KaKaoAuthViewModel = viewModel()
+
+                TestScreen(viewModel,navController)
+//                TestScreen(navController)
+            }
 
             composable(route = Screen.ProductScreen.route) {
                 ProductScreen(innerPadding)

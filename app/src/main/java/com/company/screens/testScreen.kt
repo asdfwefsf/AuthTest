@@ -20,19 +20,11 @@ import com.company.authtest.viewmodel.KaKaoAuthViewModel
 import com.company.authtest.viewmodel.networkViewModel
 
 @Composable
-fun LoginScreen(viewModel: KaKaoAuthViewModel , navController: NavController) {
+fun TestScreen(viewModel: KaKaoAuthViewModel , navController: NavController) {
     val networkViewModel : networkViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 
-    val isLoggedIn = viewModel.isLoggedIn.collectAsState().value
     val userInfo = viewModel.userInfoList.collectAsState()
-    LaunchedEffect(isLoggedIn) {
-        Log.d("datastore" , isLoggedIn.toString())
-        if (isLoggedIn) {
-            navController.navigate(Screen.ProductScreen.route) {
-                popUpTo(Screen.LoginScreen.route) { inclusive = true }
-            }
-        }
-    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(20.dp)
@@ -40,7 +32,6 @@ fun LoginScreen(viewModel: KaKaoAuthViewModel , navController: NavController) {
         Spacer(Modifier.height(10.dp))
 
         Button(onClick = {
-            viewModel.kakaoLogin()
         }) {
             Text("카카오 로그인")
         }
@@ -63,5 +54,6 @@ fun LoginScreen(viewModel: KaKaoAuthViewModel , navController: NavController) {
             Spacer(Modifier.height(10.dp))
             Text(userInfo.value[3])
         }
+
     }
 }

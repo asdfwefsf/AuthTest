@@ -3,10 +3,13 @@ package com.company.authtest.viewmodel
 import android.app.Application
 import android.content.Context
 import android.util.Log
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.model.ClientError
@@ -22,38 +25,44 @@ import kotlinx.coroutines.launch
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class KaKaoAuthViewModel(application : Application) : AndroidViewModel(application){
+class KaKaoAuthViewModel(application: Application) : AndroidViewModel(application) {
 
     private val context = application.applicationContext
+//    private val dataStore = MyApp.instance.dataStore
 
+//    val isLoggedIn = MutableStateFlow<Boolean>(false)
+//    val LOGGED_IN_KEY = booleanPreferencesKey("LOGGED_IN")
     // DataStore 인스턴스 생성 : LOGIN이라는 이름을 가진 DataStore 인스턴스를 생성한거야.
     private val Context.dataStore by preferencesDataStore("LOGIN")
 
-
     companion object {
+
+
         const val TAG = "KaKaoAuthViewModel"
 
         val LOGGED_IN_KEY = booleanPreferencesKey("LOGGED_IN")
     }
+
     val isLoggedIn = MutableStateFlow<Boolean>(false)
 
     // dataStore에서 LOGGED_IN_KEY 키에 isLoggedIn이라는 값을 넣어준다.
-    suspend fun saveLoginState(isLoggedIn: Boolean) {
-        context.dataStore.edit { LOGIN ->
-            LOGIN[LOGGED_IN_KEY] = isLoggedIn
-        }
-    }
+//    suspend fun saveLoginState(isLoggedIn: Boolean) {
+//        context.dataStore.edit { LOGIN ->
+//            LOGIN[LOGGED_IN_KEY] = isLoggedIn
+//        }
+//    }
 
     // dataStore에서 LOGGED_IN_KEY를 키값으로 갖는 값을 "읽어서" Flow 방출
-    val loggedInState: Flow<Boolean> = context.dataStore.data.map { LOGIN ->
-        LOGIN[LOGGED_IN_KEY] ?: false
-    }
-    init {
-        // 데이터스토어에서 로그인 상태를 구독하고, 값이 방출될 때마다 StateFlow 업데이트
-        loggedInState.onEach { isLoggedInValue ->
-            isLoggedIn.value = isLoggedInValue
-        }.launchIn(viewModelScope)  // 이 부분은 코루틴 스코프 내에서 실행되어야 함
-    }
+//    val loggedInState: Flow<Boolean> = context.dataStore.data.map { LOGIN ->
+//        LOGIN[LOGGED_IN_KEY] ?: false
+//    }
+
+//    init {
+//        // 데이터스토어에서 로그인 상태를 구독하고, 값이 방출될 때마다 StateFlow 업데이트
+//        loggedInState.onEach { isLoggedInValue ->
+//            isLoggedIn.value = isLoggedInValue
+//        }.launchIn(viewModelScope)  // 이 부분은 코루틴 스코프 내에서 실행되어야 함
+//    }
 
     fun kakaoLogin() {
         viewModelScope.launch {
@@ -63,7 +72,7 @@ class KaKaoAuthViewModel(application : Application) : AndroidViewModel(applicati
             // 로그인이 성공했다면,
             if (loginResult) {
                 // 로그인 상태를 저장합니다.
-                saveLoginState(true)
+//                saveLoginState(true)
 
                 // 사용자 정보를 불러오는 함수를 호출합니다.
                 suspendGetAuthInfo(userInfoList)
@@ -73,7 +82,8 @@ class KaKaoAuthViewModel(application : Application) : AndroidViewModel(applicati
             isLoggedIn.emit(loginResult)
         }
     }
-    private suspend fun handleKakaoLogin() : Boolean =
+
+    private suspend fun handleKakaoLogin(): Boolean =
         suspendCoroutine<Boolean> { continuation ->
             // 카카오계정으로 로그인 공통 callback 구성
             // 카카오톡으로 로그인 할 수 없어 카카오계정으로 로그인할 경우 사용됨
@@ -84,7 +94,7 @@ class KaKaoAuthViewModel(application : Application) : AndroidViewModel(applicati
                 } else if (token != null) {
                     Log.i(TAG, "카카오계정으로 로그인 성공 ${token.accessToken}")
                     viewModelScope.launch {
-                        saveLoginState(true)
+//                        saveLoginState(true)
                     }
                     continuation.resume(true)
                 }
@@ -113,18 +123,41 @@ class KaKaoAuthViewModel(application : Application) : AndroidViewModel(applicati
             }
         }
 
+    // 카카오 로그 아웃
+    fun kakaoLogout() {
+        viewModelScope.launch {
+            if (handleKakaoLogout()) {
+                isLoggedIn.emit(false)
+            }
+        }
+    }
+
+    private suspend fun handleKakaoLogout(): Boolean =
+        suspendCoroutine { continuation ->
+            UserApiClient.instance.logout { error ->
+                if (error != null) {
+                    Log.e(TAG, "로그아웃 실패 , SDK에서 토큰 삭제됨", error)
+                    continuation.resume(false)
+                } else {
+                    Log.i(TAG, "로그아웃 성공 , SDK에서 토큰 삭제됨")
+                    continuation.resume(true)
+
+                }
+
+            }
+        }
+
 
     // 사용자 정보 반환 관련 ViewModel
     private val _userInfoList = MutableStateFlow<List<String>>(emptyList())
     val userInfoList = _userInfoList
 
-    private suspend fun suspendGetAuthInfo(list : MutableStateFlow<List<String>>)  {
+    private suspend fun suspendGetAuthInfo(list: MutableStateFlow<List<String>>) {
         UserApiClient.instance.me { user, error ->
             if (error != null) {
                 Log.e(TAG, "사용자 정보 요청 실패", error)
 
-            }
-            else if (user != null) {
+            } else if (user != null) {
                 val userInfo = listOf(
                     "회원번호: ${user.id}",
                     "이메일: ${user.kakaoAccount?.email}",
@@ -137,11 +170,9 @@ class KaKaoAuthViewModel(application : Application) : AndroidViewModel(applicati
             }
         }
     }
-//    fun getAuthInfo() {
-//        viewModelScope.launch {
-//            suspendGetAuthInfo(_userInfoList)
-//        }
-//    }
 
 
 }
+
+
+
