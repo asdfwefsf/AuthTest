@@ -148,6 +148,8 @@ class KaKaoAuthViewModel(application: Application) : AndroidViewModel(applicatio
         }
 
 
+
+
     // 사용자 정보 반환 관련 ViewModel
     private val _userInfoList = MutableStateFlow<List<String>>(emptyList())
     val userInfoList = _userInfoList
